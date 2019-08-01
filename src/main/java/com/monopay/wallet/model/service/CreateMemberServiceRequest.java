@@ -1,6 +1,5 @@
 package com.monopay.wallet.model.service;
 
-import com.monopay.wallet.validation.MerchantMustExists;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +15,6 @@ import javax.validation.constraints.Pattern;
 @NoArgsConstructor
 public class CreateMemberServiceRequest {
 
-  @MerchantMustExists(message = "MustExists")
   @NotBlank(message = "NotBlank")
   private String merchantId;
 
