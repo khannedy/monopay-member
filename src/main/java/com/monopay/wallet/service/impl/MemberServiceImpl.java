@@ -1,5 +1,7 @@
 package com.monopay.wallet.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monopay.wallet.entity.Balance;
 import com.monopay.wallet.entity.Member;
 import com.monopay.wallet.model.service.CreateMemberServiceRequest;
@@ -11,13 +13,16 @@ import com.monopay.wallet.model.web.response.UpdateMemberWebResponse;
 import com.monopay.wallet.repository.BalanceRepository;
 import com.monopay.wallet.repository.MemberRepository;
 import com.monopay.wallet.service.MemberService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Validated
 public class MemberServiceImpl implements MemberService {
@@ -27,6 +32,12 @@ public class MemberServiceImpl implements MemberService {
 
   @Autowired
   private BalanceRepository balanceRepository;
+
+  @Autowired
+  private KafkaTemplate<String, String> kafkaTemplate;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Override
   public CreateMemberWebResponse create(@Valid CreateMemberServiceRequest request) {
@@ -40,6 +51,7 @@ public class MemberServiceImpl implements MemberService {
       .build();
 
     member = memberRepository.save(member);
+    publishSaveMemberEvent(member);
 
     Balance balance = Balance.builder()
       .id(member.getId())
@@ -65,6 +77,7 @@ public class MemberServiceImpl implements MemberService {
     member.setVerified(request.getVerified());
 
     memberRepository.save(member);
+    publishSaveMemberEvent(member);
 
     return UpdateMemberWebResponse.builder()
       .id(member.getId())
@@ -89,5 +102,14 @@ public class MemberServiceImpl implements MemberService {
         .point(balance.getBalance())
         .build())
       .build();
+  }
+
+  private void publishSaveMemberEvent(Member member) {
+    try {
+      String payload = objectMapper.writeValueAsString(member);
+      kafkaTemplate.send("monopay-save-member-event", payload);
+    } catch (JsonProcessingException e) {
+      log.error(e.getMessage(), e);
+    }
   }
 }
