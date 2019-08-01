@@ -51,7 +51,7 @@ public class MemberServiceImpl implements MemberService {
       .build();
 
     member = memberRepository.save(member);
-    publishSaveMemberEvent(member);
+    publishMember(member);
 
     Balance balance = Balance.builder()
       .id(member.getId())
@@ -77,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
     member.setVerified(request.getVerified());
 
     memberRepository.save(member);
-    publishSaveMemberEvent(member);
+    publishMember(member);
 
     return UpdateMemberWebResponse.builder()
       .id(member.getId())
@@ -104,7 +104,7 @@ public class MemberServiceImpl implements MemberService {
       .build();
   }
 
-  private void publishSaveMemberEvent(Member member) {
+  public void publishMember(Member member) {
     try {
       String payload = objectMapper.writeValueAsString(member);
       kafkaTemplate.send("monopay-save-member-event", payload);

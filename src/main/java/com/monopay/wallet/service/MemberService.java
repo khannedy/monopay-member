@@ -1,5 +1,6 @@
 package com.monopay.wallet.service;
 
+import com.monopay.wallet.entity.Member;
 import com.monopay.wallet.model.service.CreateMemberServiceRequest;
 import com.monopay.wallet.model.service.GetMemberServiceRequest;
 import com.monopay.wallet.model.service.UpdateMemberServiceRequest;
@@ -16,5 +17,7 @@ public interface MemberService {
   UpdateMemberWebResponse update(@Valid UpdateMemberServiceRequest request);
 
   GetMemberWebResponse get(@Valid GetMemberServiceRequest request);
+
+  void publishMember(Member member);
 
 }
