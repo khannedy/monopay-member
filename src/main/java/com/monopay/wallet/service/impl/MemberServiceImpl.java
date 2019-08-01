@@ -53,15 +53,6 @@ public class MemberServiceImpl implements MemberService {
     member = memberRepository.save(member);
     publishMember(member);
 
-    Balance balance = Balance.builder()
-      .id(member.getId())
-      .merchantId(request.getMerchantId())
-      .point(0L)
-      .balance(0L)
-      .build();
-
-    balance = balanceRepository.save(balance);
-
     return CreateMemberWebResponse.builder()
       .id(member.getId())
       .name(member.getName())
